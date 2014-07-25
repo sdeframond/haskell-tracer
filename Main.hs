@@ -106,5 +106,5 @@ colorFromRay r ts = color hit
 
 allIntersections :: Ray -> [AnyShape] -> [AnyShape]
 allIntersections ray ts = map fst $ sortBy distance intersections
-  where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts]
+  where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts, d > 0]
         distance (_, d) (_, d') = compare d d'
