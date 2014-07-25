@@ -61,14 +61,21 @@ instance Shape Triangle where
         where n = normalize ((p2 &- p1) &^ (p3 &- p1))
 
 instance Shape Sphere where
-  intersectWith r s = Nothing
+  intersectWith (Ray ro dir) (Sphere so r)
+    | d2 > (r**2) = Nothing
+    | otherwise = Just $ (vecToCenter &. dir) - (sqrt (r**2 - d2))
+    where
+      vecToCenter = so &- ro
+      projVec = dir &* (vecToCenter &. dir) &- vecToCenter
+      d2 = projVec &. projVec
+
 
 instance Shape AnyShape where
   intersectWith r (AnyShape a) = intersectWith r a
 
 world :: World
 world = World { wTriangles = [Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)]
-              , wSpheres = [Sphere (Vec3 (-1) 0 10) 1]
+              , wSpheres = [Sphere (Vec3 (-1) (-1) 10) 1]
               }
 
 shapes :: World -> [AnyShape]
