@@ -3,7 +3,9 @@
 module Main where
 
 import           Codec.Picture
+import           Control.Applicative
 import           Data.List
+import           Data.Maybe
 import           Data.Vect
 import           Data.Word
 
@@ -14,15 +16,20 @@ data Color = Color Word8 Word8 Word8
 
 data Ray = Ray Point Direction
 
-data World = World { wTriangles :: [Triangle], wSpheres :: [Sphere] }
+data World = World { objects :: [Object] }
 
 data Plane = Plane Point Direction
 
 data Triangle = Triangle Point Point Point
 data Sphere = Sphere Point Float
 
-data AnyShape where
-  AnyShape :: Shape a => a -> AnyShape
+data Object where
+  Ob :: Shape a => { shape :: a
+                   , color :: Color
+                   } -> Object
+
+instance Shape Object where
+  intersectWith r (Ob shape color) = intersectWith r shape
 
 class Shape a where
   intersectWith :: Ray -> a -> Maybe Float
@@ -69,17 +76,16 @@ instance Shape Sphere where
       projVec = dir &* (vecToCenter &. dir) &- vecToCenter
       d2 = projVec &. projVec
 
-
-instance Shape AnyShape where
-  intersectWith r (AnyShape a) = intersectWith r a
-
 world :: World
-world = World { wTriangles = [Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)]
-              , wSpheres = [Sphere (Vec3 (-1) (-1) 10) 1]
-              }
-
-shapes :: World -> [AnyShape]
-shapes w = map AnyShape (wTriangles w) ++ map AnyShape (wSpheres w)
+world = World { objects =
+  [ Ob { color = Color 0 0 255
+       , shape = Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)
+       }
+  , Ob { color = Color 255 0 0
+       , shape = Sphere (Vec3 (-1) (-1) 10) 1
+       }
+  ]
+  }
 
 bgColor :: Color
 bgColor = Color 0 0 0
@@ -100,18 +106,14 @@ render width height = generateImage r width height
 
 renderPixel :: Float -> Float -> PixelRGB8
 renderPixel x y = PixelRGB8 r g b
-  where Color r g b = colorFromRay ray $ shapes world
+  where Color r g b = colorFromRay ray $ objects world
         ray = Ray (Vec3 0 0 0) (Vec3 x y 1)
 
-colorFromRay :: Ray -> [AnyShape] -> Color
-colorFromRay r ts = color hit
-  where color Nothing = bgColor
-        color _ = triangleColor
-        hit = first $ allIntersections r ts
-        first [] = Nothing
-        first (x:xs) = Just x
+colorFromRay :: Ray -> [Object] -> Color
+colorFromRay r ts = fromMaybe bgColor $ color <$> hit
+  where hit = listToMaybe $ allIntersections r ts
 
-allIntersections :: Ray -> [AnyShape] -> [AnyShape]
+allIntersections :: Ray -> [Object] -> [Object]
 allIntersections ray ts = map fst $ sortBy distance intersections
   where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts, d > 0]
         distance (_, d) (_, d') = compare d d'
