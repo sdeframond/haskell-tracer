@@ -29,7 +29,7 @@ data Object where
                    } -> Object
 
 instance Shape Object where
-  intersectWith r (Ob shape color) = intersectWith r shape
+  intersectWith r Ob{shape = s} = intersectWith r s
 
 class Shape a where
   intersectWith :: Ray -> a -> Maybe Float
@@ -37,35 +37,35 @@ class Shape a where
 instance Shape Plane where
   intersectWith (Ray orig dir) (Plane point n)
     | parallel = Nothing
-    | otherwise = Just distance
+    | otherwise = Just d
     where vecToPoint = point &- orig
           parallel = n &. dir == 0
-          distance = (n &. vecToPoint)/(n &. dir)
+          d = (n &. vecToPoint)/(n &. dir)
 
 instance Shape Triangle where
   intersectWith ray@(Ray origin dir) t = do
-    distance <- intersectWith ray $ planeFromTriangle t
-    let intersection = (dir &* distance) &+ origin
+    d <- intersectWith ray $ planeFromTriangle t
+    let intersection = (dir &* d) &+ origin
         isInside = withinTriangle t intersection
-    if isInside then return distance else Nothing
-    where
-      withinTriangle :: Triangle -> Point -> Bool
-      withinTriangle (Triangle p1 p2 p3) p = s >= 0 && t >= 0 && s+t <= 1
-        where u = p2 &- p1
-              v = p3 &- p1
-              w = p &- p1
-              uv = u &. v
-              wv = w &. v
-              vv = v &. v
-              wu = w &. u
-              uu = u &. u
-              s = (uv*wv - vv*wu)/d
-              t = (uv*wu - uu*wv)/d
-              d = uv**2 - uu*vv
+    if isInside then return d else Nothing
 
-      planeFromTriangle :: Triangle -> Plane
-      planeFromTriangle (Triangle p1 p2 p3) = Plane p1 n
-        where n = normalize ((p2 &- p1) &^ (p3 &- p1))
+withinTriangle :: Triangle -> Point -> Bool
+withinTriangle (Triangle p1 p2 p3) p = s >= 0 && t >= 0 && s+t <= 1
+  where u = p2 &- p1
+        v = p3 &- p1
+        w = p &- p1
+        uv = u &. v
+        wv = w &. v
+        vv = v &. v
+        wu = w &. u
+        uu = u &. u
+        s = (uv*wv - vv*wu)/d
+        t = (uv*wu - uu*wv)/d
+        d = uv**2 - uu*vv
+
+planeFromTriangle :: Triangle -> Plane
+planeFromTriangle (Triangle p1 p2 p3) = Plane p1 n
+  where n = normalize ((p2 &- p1) &^ (p3 &- p1))
 
 instance Shape Sphere where
   intersectWith (Ray ro dir) (Sphere so r)
@@ -100,8 +100,8 @@ main = do
 
 render :: Int -> Int -> Image PixelRGB8
 render width height = generateImage r width height
-  where r x y = renderPixel (normalize width x) $ -(normalize height y)
-        normalize range x = ((fromIntegral x) - (fromIntegral range)/2)/size
+  where r x y = renderPixel (toCameraSize width x) $ -(toCameraSize height y)
+        toCameraSize range x = ((fromIntegral x) - (fromIntegral range)/2)/size
         size = fromIntegral $ max width height
 
 renderPixel :: Float -> Float -> PixelRGB8
@@ -114,6 +114,6 @@ colorFromRay r ts = fromMaybe bgColor $ color <$> hit
   where hit = listToMaybe $ allIntersections r ts
 
 allIntersections :: Ray -> [Object] -> [Object]
-allIntersections ray ts = map fst $ sortBy distance intersections
+allIntersections ray ts = map fst $ sortBy depth intersections
   where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts, d > 0]
-        distance (_, d) (_, d') = compare d d'
+        depth (_, d) (_, d') = compare d d'
