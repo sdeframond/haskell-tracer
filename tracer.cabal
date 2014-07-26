@@ -55,6 +55,7 @@ executable tracer
   
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:    
+  Ghc-options: -O3 -Wall
   
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.6 && <4.7,
