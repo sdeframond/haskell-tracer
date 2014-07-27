@@ -47,7 +47,7 @@ instance Shape Plane where
     where vecToPoint = point &- orig
           parallel = n &. dir == 0
           d = (n &. vecToPoint)/(n &. dir)
-  normal (Plane p dir) _ = dir
+  normal (Plane _ dir) _ = dir
 
 data Triangle = Triangle Point Point Point
 instance Shape Triangle where

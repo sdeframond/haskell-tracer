@@ -11,11 +11,11 @@ data World = World { objects :: [Object], lights :: [Light] }
 world :: World
 world = World {
   objects =
-      [ Ob { color = Color 0 0 1
-           , shape = Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)
+      [ Ob { color = Color 1 1 1
+           , shape = Plane (Vec3 0 (-1) 0) (Vec3 0 1 0)
            }
-      , Ob { color = Color 0.4 0.4 0.4
-           , shape = Plane (Vec3 0 0 0) (Vec3 0 1 0)
+      , Ob { color = Color 0 0 1
+           , shape = Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)
            }
       , Ob { color = Color 1 0 0
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
