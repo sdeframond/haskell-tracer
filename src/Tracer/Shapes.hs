@@ -1,6 +1,8 @@
 {-# LANGUAGE GADTs #-}
 
-module Tracer.Shapes ( Color(..)
+module Tracer.Shapes ( colorFromMaterial
+                     , Material(..)
+                     , Color(..)
                      , Ray(..)
                      , Shape(..)
                      , Triangle(..)
@@ -29,6 +31,33 @@ instance AbelianGroup Color where
 instance Vector Color where
   scalarMul s (Color r g b) = Color (s*r) (s*g) (s*b)
   mapVec    f (Color r g b) = Color (f r) (f g) (f b)
+
+data Material = Material { mShininess :: Float
+                         , mSpec :: Color
+                         , mDiff:: Color
+                         }
+
+colorFromMaterial :: Material -> Direction -> Point -> Direction -> Light -> Color
+colorFromMaterial m v p n l = d &+ s &+ a
+  where d = (mDiff m) &! (diffuseAt p n l)
+        s = (mSpec m) &! (specularAt p n l v $ mShininess m)
+        a = (mDiff m) &! (ambiantAt p l)
+
+specularAt :: Vec3 -> Vec3 -> Light -> Vec3 -> Float -> Color
+specularAt p n (Light pl c) v s = c &* factor
+  where factor = if f > 0 then f ** s else 0
+        f = r &. v
+        r = (2 * (vecToLight &. n)) *& n &- vecToLight
+        vecToLight = normalize $ p &- pl
+
+diffuseAt :: Vec3 -> Vec3 -> Light -> Color
+diffuseAt p n (Light pl c) = c &* factor
+  where factor =  max 0 $ (n &. normalize vecToLight) / dist**2
+        dist = norm vecToLight
+        vecToLight = pl &- p
+
+ambiantAt :: Vec3 -> Light -> Color
+ambiantAt p (Light pl c) = c &* (1/(norm $ pl &- p)**2)
 
 data Ray = Ray Point Direction
 
@@ -90,7 +119,7 @@ instance Shape Sphere where
 
 data Object where
   Ob :: Shape a => { shape :: a
-                   , color :: Color
+                   , material :: Material
                    } -> Object
 
 instance Shape Object where

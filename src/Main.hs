@@ -8,27 +8,31 @@ import           Tracer.Shapes
 
 data World = World { objects :: [Object], lights :: [Light] }
 
+baseMaterial :: Material
+baseMaterial = Material {
+  mShininess = 40,
+  mSpec = Color 0.2 0.2 0.2,
+  mDiff = Color 0.8 0.8 0.8
+}
+
 world :: World
 world = World {
   objects =
-      [ Ob { color = Color 1 1 1
+      [ Ob { material = baseMaterial { mDiff = Color 1 1 1, mSpec = Color 0 0 0 }
            , shape = Plane (Vec3 0 (-1) 0) (Vec3 0 1 0)
            }
-      , Ob { color = Color 0 0 1
+      , Ob { material = baseMaterial { mDiff = Color 0 0 0.8 }
            , shape = Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)
            }
-      , Ob { color = Color 1 0 0
+      , Ob { material = baseMaterial { mDiff = Color 0.8 0 0 }
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
            }
       ]
-  , lights = [Light (Vec3 (-3) 2 8) (Color 2 2 2)]
+  , lights = [Light (Vec3 (-3) 2 8) (Color 3 3 3)]
   }
 
 bgColor :: Color
 bgColor = Color 0 0 0
-
-ambColor :: Color
-ambColor = Color 0.1 0.1 0.1
 
 main :: IO ()
 main = do
@@ -51,21 +55,11 @@ colorFromRay :: Ray -> [Object] -> Color
 colorFromRay r@(Ray o dir) ts = fromMaybe bgColor objectColor
   where
     objectColor = do
-      (obj, dist) <- hit
-      let c = color obj
-          hitPoint = o &+ (dir &* dist)
+      (obj, dist) <- listToMaybe $ allIntersections r ts
+      let hitPoint = o &+ (dir &* dist)
           n = normal obj hitPoint
-          a = ambColor &! c
-          d = c &! (vecSum $ fmap (diffuseAt hitPoint n) (lights world))
-          s = zero
-      return $ vecSum [a, d, s]
-    hit = listToMaybe $ allIntersections r ts
-
-diffuseAt :: Vec3 -> Vec3 -> Light -> Color
-diffuseAt p n (Light pl c) = c &* factor
-  where factor =  max 0 $ (n &. vecToLight) / dist**2
-        dist = norm vecToLight
-        vecToLight = pl &- p
+          mat = material obj
+      return $ vecSum $ fmap (colorFromMaterial mat dir hitPoint n) (lights world)
 
 allIntersections :: Ray -> [Object] -> [(Object, Float)]
 allIntersections ray ts = sortBy depth intersections
