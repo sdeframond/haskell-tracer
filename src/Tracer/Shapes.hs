@@ -1,4 +1,5 @@
 module Tracer.Shapes ( mkRay
+                     , mkRayLongLat
                      , Ray(Ray)
                      , Shape(..)
                      , Triangle(..)
@@ -15,6 +16,12 @@ data Ray = Ray Point Direction
 
 mkRay :: Point -> Direction -> Ray
 mkRay p d = Ray p (normalize d)
+
+mkRayLongLat :: Point -> Float -> Float -> Ray
+mkRayLongLat p lo la = Ray p (Vec3 x y z)
+  where x = sin lo * cos la
+        y = sin la
+        z = cos la * cos lo
 
 class Shape a where
   intersectWith :: Ray -> a -> Maybe Float

@@ -78,7 +78,8 @@ render width height = generateImage r width height
 renderPixel :: Float -> Float -> PixelRGB8
 renderPixel x y = PixelRGB8 (fence r) (fence g) (fence b)
   where Color r g b = colorFromRay ray $ objects world
-        ray = mkRay (Vec3 0 0 0) (Vec3 x y 1)
+        --ray = mkRay (Vec3 0 0 0) (Vec3 x y 1)
+        ray = mkRayLongLat (Vec3 0 0 0) x y
         fence = round . (*coef) . max 0 . min 1
         coef = fromIntegral (maxBound :: Pixel8)
 
