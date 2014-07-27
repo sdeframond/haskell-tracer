@@ -22,16 +22,31 @@ instance Shape Object where
 
 baseMaterial :: Material
 baseMaterial = Material {
-  mShininess = 40,
-  mSpec = Color 0.2 0.2 0.2,
-  mDiff = Color 0.8 0.8 0.8
+  mShininess = 100,
+  mSpec = Color 1 1 1,
+  mDiff = Color 1 1 1
 }
+
+planeMaterial :: Material
+planeMaterial = baseMaterial { mSpec = Color 0 0 0 }
 
 world :: World
 world = World {
   objects =
-      [ Ob { material = baseMaterial { mDiff = Color 1 1 1, mSpec = Color 0 0 0 }
-           , shape = Plane (Vec3 0 (-1) 0) (Vec3 0 1 0)
+      [ Ob { material = planeMaterial
+           , shape = Plane (Vec3 0 (-3) 0) (Vec3 0 1 0)
+           }
+      , Ob { material = planeMaterial
+           , shape = Plane (Vec3 0 3 0) (Vec3 0 (-1) 0)
+           }
+      , Ob { material = planeMaterial
+           , shape = Plane (Vec3 0 0 15) (Vec3 0 0 (-1))
+           }
+      , Ob { material = planeMaterial
+           , shape = Plane (Vec3 (-3) 0 0) (Vec3 1 0 0)
+           }
+      , Ob { material = planeMaterial
+           , shape = Plane (Vec3 (3) 0 0) (Vec3 1 0 0)
            }
       , Ob { material = baseMaterial { mDiff = Color 0 0 0.8 }
            , shape = Triangle (Vec3 0 0 10) (Vec3 0 1 10) (Vec3 1 0 10)
@@ -40,7 +55,7 @@ world = World {
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
            }
       ]
-  , lights = [AnyLight $ PointLight (Vec3 (-3) 2 8) (Color 4 4 4)]
+  , lights = [AnyLight $ PointLight (Vec3 (-2) 1 10) (Color 2 2 2)]
   }
 
 bgColor :: Color
