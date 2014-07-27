@@ -77,7 +77,8 @@ renderPixel :: Float -> Float -> PixelRGB8
 renderPixel x y = PixelRGB8 (fence r) (fence g) (fence b)
   where Color r g b = colorFromRay ray $ objects world
         ray = mkRay (Vec3 0 0 0) (Vec3 x y 1)
-        fence = round . (*255) . max 0 . min 1
+        fence = round . (*coef) . max 0 . min 1
+        coef = fromIntegral (maxBound :: Pixel8)
 
 colorFromRay :: Ray -> [Object] -> Color
 colorFromRay r@(Ray o dir) ts = fromMaybe bgColor objectColor
