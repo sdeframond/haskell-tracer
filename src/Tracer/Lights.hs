@@ -34,14 +34,14 @@ instance Vector Color where
   mapVec    f (Color r g b) = Color (f r) (f g) (f b)
 
 colorFromMaterial :: LightSource a => Material -> Direction -> Point -> Direction -> a -> Color
-colorFromMaterial m v p n l = d &+ s &+ a
+colorFromMaterial m rayDir p n l = d &+ s &+ a
   where d = (mDiff m) &! (i &* (max 0 $ n &. neg dir))
         s = (mSpec m) &! (i &* f**shiny)
         a = (mDiff m) &! i
         i = lIntensity l p
         dir = lDirection l p
         shiny = mShininess m
-        f = max 0 $ r &. v
+        f = max 0 $ r &. rayDir
         r = (2 * (dir &. n)) *& n &- dir
 
 class LightSource a where

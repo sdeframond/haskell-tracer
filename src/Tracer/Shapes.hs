@@ -1,4 +1,5 @@
-module Tracer.Shapes ( Ray(..)
+module Tracer.Shapes ( mkRay
+                     , Ray(Ray)
                      , Shape(..)
                      , Triangle(..)
                      , Sphere(..)
@@ -11,6 +12,9 @@ type Point = Vec3
 type Direction = Vec3
 
 data Ray = Ray Point Direction
+
+mkRay :: Point -> Direction -> Ray
+mkRay p d = Ray p (normalize d)
 
 class Shape a where
   intersectWith :: Ray -> a -> Maybe Float
