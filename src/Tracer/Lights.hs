@@ -50,7 +50,7 @@ class LightSource a where
 
 data PointLight = PointLight Point Color
 instance LightSource PointLight where
-  lIntensity (PointLight o c) p = c &* (1/dist**2)
+  lIntensity (PointLight o c) p = c &* (1/(1+dist)**2)
     where dist = norm $ p &- o
   lDirection (PointLight o _) p = normalize $ p &- o
 
