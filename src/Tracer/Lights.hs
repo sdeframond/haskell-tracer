@@ -36,12 +36,12 @@ instance Vector Color where
 colorFromMaterial :: LightSource a => Material -> Direction -> Point -> Direction -> a -> Color
 colorFromMaterial m v p n l = d &+ s &+ a
   where d = (mDiff m) &! (i &* (max 0 $ n &. neg dir))
-        s = (mSpec m) &! (i &* if f > 0 then f ** shiny else 0)
+        s = (mSpec m) &! (i &* f**shiny)
         a = (mDiff m) &! i
         i = lIntensity l p
         dir = lDirection l p
         shiny = mShininess m
-        f = r &. v
+        f = max 0 $ r &. v
         r = (2 * (dir &. n)) *& n &- dir
 
 class LightSource a where
