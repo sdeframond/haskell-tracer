@@ -55,7 +55,9 @@ world = World {
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
            }
       ]
-  , lights = [AnyLight $ PointLight (Vec3 (-2) 1 10) (Color 2 2 2)]
+  , lights = fmap AnyLight [ PointLight (Vec3 (-2) 1 10) (Color 2 2 2)
+                           , PointLight (Vec3 2 0 10) (Color 1 0.5 0)
+                           ]
   }
 
 bgColor :: Color
