@@ -6,7 +6,7 @@ import           Data.Maybe
 import           Data.Vect
 import           Tracer.Shapes
 
-data World = World { objects :: [Object], lights :: [Light] }
+data World = World { objects :: [Object], lights :: [AnyLight] }
 
 baseMaterial :: Material
 baseMaterial = Material {
@@ -28,7 +28,7 @@ world = World {
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
            }
       ]
-  , lights = [Light (Vec3 (-3) 2 8) (Color 3 3 3)]
+  , lights = [AnyLight $ PointLight (Vec3 (-3) 2 8) (Color 4 4 4)]
   }
 
 bgColor :: Color
