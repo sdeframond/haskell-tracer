@@ -69,7 +69,8 @@ main = do
 render :: Int -> Int -> Image PixelRGB8
 render width height = generateImage r width height
   where r x y = renderPixel (toCameraSize width x) $ -(toCameraSize height y)
-        toCameraSize range x = ((fromIntegral x) - (fromIntegral range)/2)/size
+        toCameraSize range x = camAperture * ((fromIntegral x) - (fromIntegral range)/2)/size
+        camAperture = 1
         size = fromIntegral $ max width height
 
 renderPixel :: Float -> Float -> PixelRGB8
