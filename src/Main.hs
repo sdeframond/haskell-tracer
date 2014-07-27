@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs #-}
+
 module Main where
 
 import           Codec.Picture
@@ -5,8 +7,18 @@ import           Data.List
 import           Data.Maybe
 import           Data.Vect
 import           Tracer.Shapes
+import           Tracer.Lights
 
 data World = World { objects :: [Object], lights :: [AnyLight] }
+
+data Object where
+  Ob :: Shape a => { shape :: a
+                   , material :: Material
+                   } -> Object
+
+instance Shape Object where
+  intersectWith r Ob{shape = s} = intersectWith r s
+  normal Ob{shape = s} p = normal s p
 
 baseMaterial :: Material
 baseMaterial = Material {
