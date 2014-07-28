@@ -17,6 +17,7 @@ type Direction = Vec3
 data Material = Material { mShininess :: Float
                          , mSpec :: Color
                          , mDiff:: Color
+                         , mAmb:: Float
                          }
 
 data Color = Color Float Float Float
@@ -38,7 +39,7 @@ colorFromMaterial :: LightSource a => Material -> Direction -> Point -> Directio
 colorFromMaterial m rayDir p n l = d &+ s &+ a
   where d = (mDiff m) &! (i &* (max 0 $ n &. neg dir))
         s = (mSpec m) &! (i &* f**shiny)
-        a = (mDiff m) &! i
+        a = (mAmb m) *& ((mDiff m) &! i)
         i = lIntensity l p
         dir = lDirection l p
         shiny = mShininess m

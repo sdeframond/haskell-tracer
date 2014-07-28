@@ -24,7 +24,8 @@ baseMaterial :: Material
 baseMaterial = Material {
   mShininess = 100,
   mSpec = Color 1 1 1,
-  mDiff = Color 1 1 1
+  mDiff = Color 1 1 1,
+  mAmb = 0.1
 }
 
 planeMaterial :: Material
@@ -55,9 +56,10 @@ world = World {
            , shape = Sphere (Vec3 (-0.5) (-0.5) 10.5) 1
            }
       ]
-  , lights = fmap AnyLight [ PointLight (Vec3 (-2) 1 10) (Color 2 2 2)
-                           , PointLight (Vec3 2 0 10) (Color 1 0.5 0)
-                           ]
+  , lights =  [ AnyLight $ mkDirLight (Vec3 0 (-1) 0) (Color 0.3 0.3 0.3)
+              , AnyLight $ PointLight (Vec3 (-2) 1 10) (Color 3 3 3)
+              , AnyLight $ PointLight (Vec3 2 0 10) (Color 3 1.5 0)
+              ]
   }
 
 bgColor :: Color
