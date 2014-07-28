@@ -87,13 +87,13 @@ colorFromRay :: Ray -> [Object] -> Color
 colorFromRay r@(Ray o dir) ts = fromMaybe bgColor objectColor
   where
     objectColor = do
-      (obj, dist) <- listToMaybe $ allIntersections r ts
+      (obj, dist) <- rayIntersection r ts
       let hitPoint = o &+ (dir &* dist)
           n = normal obj hitPoint
           mat = material obj
       return $ vecSum $ fmap (colorFromMaterial mat dir hitPoint n) (lights world)
 
-allIntersections :: Ray -> [Object] -> [(Object, Float)]
-allIntersections ray ts = sortBy depth intersections
+rayIntersection :: Ray -> [Object] -> Maybe (Object, Float)
+rayIntersection ray ts = listToMaybe $ sortBy depth intersections
   where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts, d > 0]
         depth (_, d) (_, d') = compare d d'
