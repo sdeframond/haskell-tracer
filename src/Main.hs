@@ -5,6 +5,7 @@ module Main where
 import           Codec.Picture
 import           Data.List
 import           Data.Maybe
+import           Data.Typeable
 import           Data.Vect
 import           Tracer.Shapes
 import           Tracer.Lights
@@ -12,9 +13,13 @@ import           Tracer.Lights
 data World = World { objects :: [Object], lights :: [AnyLight] }
 
 data Object where
-  Ob :: Shape a => { shape :: a
-                   , material :: Material
-                   } -> Object
+  Ob :: (Shape a, Typeable a) => {
+    shape :: a,
+    material :: Material
+  } -> Object
+
+instance Eq Object where
+  Ob{shape = s1} == Ob{shape = s2} = Just s1 == cast s2
 
 instance Shape Object where
   intersectWith r Ob{shape = s} = intersectWith r s
@@ -37,9 +42,9 @@ world = World {
       [ Ob { material = planeMaterial
            , shape = Plane (Vec3 0 (-3) 0) (Vec3 0 1 0)
            }
-      , Ob { material = planeMaterial
-           , shape = Plane (Vec3 0 3 0) (Vec3 0 (-1) 0)
-           }
+      --, Ob { material = planeMaterial
+      --     , shape = Plane (Vec3 0 3 0) (Vec3 0 (-1) 0)
+      --     }
       , Ob { material = planeMaterial
            , shape = Plane (Vec3 0 0 15) (Vec3 0 0 (-1))
            }
@@ -93,7 +98,8 @@ colorFromRay r@(Ray o dir) ts = fromMaybe bgColor objectColor
       let hitPoint = o &+ (dir &* dist)
           n = normal obj hitPoint
           mat = material obj
-      return $ vecSum $ fmap (colorFromMaterial mat dir hitPoint n) (lights world)
+          colorFromLight = colorFromMaterial mat dir hitPoint n obj ts
+      return $ vecSum $ fmap colorFromLight (lights world)
 
 rayIntersection :: Ray -> [Object] -> Maybe (Object, Float)
 rayIntersection ray ts = listToMaybe $ sortBy depth intersections

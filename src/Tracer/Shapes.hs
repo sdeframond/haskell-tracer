@@ -1,3 +1,5 @@
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+
 module Tracer.Shapes ( mkRay
                      , mkRayLongLat
                      , Ray(Ray)
@@ -7,7 +9,9 @@ module Tracer.Shapes ( mkRay
                      , Plane(..)
                    ) where
 
+import           Data.Typeable
 import           Data.Vect
+import           Data.Vect.Float.Instances()
 
 type Point = Vec3
 type Direction = Vec3
@@ -23,11 +27,11 @@ mkRayLongLat p lo la = Ray p (Vec3 x y z)
         y = sin la
         z = cos la * cos lo
 
-class Shape a where
+class (Eq a) => Shape a where
   intersectWith :: Ray -> a -> Maybe Float
   normal :: a -> Point -> Direction
 
-data Plane = Plane Point Direction
+data Plane = Plane Point Direction deriving (Eq, Typeable)
 
 instance Shape Plane where
   intersectWith (Ray orig dir) (Plane point n)
@@ -38,7 +42,7 @@ instance Shape Plane where
           d = (n &. vecToPoint)/(n &. dir)
   normal (Plane _ dir) _ = dir
 
-data Triangle = Triangle Point Point Point
+data Triangle = Triangle Point Point Point deriving (Eq, Typeable)
 instance Shape Triangle where
   intersectWith ray@(Ray origin dir) t = do
     d <- intersectWith ray $ planeFromTriangle t
@@ -65,7 +69,7 @@ planeFromTriangle :: Triangle -> Plane
 planeFromTriangle (Triangle p1 p2 p3) = Plane p1 n
   where n = normalize $ (p2 &- p1) &^ (p3 &- p1)
 
-data Sphere = Sphere Point Float
+data Sphere = Sphere Point Float deriving (Eq, Typeable)
 
 instance Shape Sphere where
   intersectWith (Ray ro dir) (Sphere so r)
