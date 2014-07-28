@@ -3,6 +3,7 @@
 module Tracer.Lights ( colorFromMaterial
                      , AnyLight(..)
                      , PointLight(..)
+                     , mkDirLight
                      , Color(..)
                      , LightSource(..)
                      , Material(..)
@@ -53,6 +54,14 @@ instance LightSource PointLight where
   lIntensity (PointLight o c) p = c &* (1/(1+dist)**2)
     where dist = norm $ p &- o
   lDirection (PointLight o _) p = normalize $ p &- o
+
+data DirectionalLight = DirLight Direction Color
+instance LightSource DirectionalLight where
+  lIntensity (DirLight _ c) _ = c
+  lDirection (DirLight d _) _ = d
+
+mkDirLight :: Direction -> Color -> DirectionalLight
+mkDirLight dir c = DirLight (normalize dir) c
 
 data AnyLight where
   AnyLight :: LightSource l => l -> AnyLight
