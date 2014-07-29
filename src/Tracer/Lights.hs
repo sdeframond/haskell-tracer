@@ -1,10 +1,11 @@
 {-# LANGUAGE GADTs #-}
 
-module Tracer.Lights ( colorFromMaterial
+module Tracer.Lights ( diffuseColor
+                     , specularColor
+                     , ambientColor
                      , AnyLight(..)
                      , PointLight(..)
                      , mkDirLight
-                     , Color(..)
                      , LightSource(..)
                      , Material(..)
                      ) where
@@ -13,6 +14,7 @@ import           Data.List
 import           Data.Maybe
 import           Data.Vect
 import           Tracer.Shapes
+import           Tracer.Color
 
 type Point = Vec3
 type Direction = Vec3
@@ -24,32 +26,15 @@ data Material = Material { mShininess :: Float
                          }
                          deriving Eq
 
-data Color = Color Float Float Float deriving Eq
+ambientColor :: Material -> Color -> Color
+ambientColor m i = (mAmb m) *& ((mDiff m) &! i)
 
-instance Pointwise Color where
-  pointwise (Color r g b) (Color r' g' b') = Color (r*r') (g*g') (b*b')
+diffuseColor :: Material -> Color -> Direction -> Direction -> Color
+diffuseColor m i n dir = (mDiff m) &! (i &* (max 0 $ n &. neg dir))
 
-instance AbelianGroup Color where
-  (&+) (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1+r2) (g1+g2) (b1+b2)
-  (&-) (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1-r2) (g1-g2) (b1-b2)
-  neg  (Color r g b)                     = Color (-r) (-g) (-b)
-  zero = Color 0 0 0
-
-instance Vector Color where
-  scalarMul s (Color r g b) = Color (s*r) (s*g) (s*b)
-  mapVec    f (Color r g b) = Color (f r) (f g) (f b)
-
-colorFromMaterial :: (LightSource a, Shape b)
-  => Material -> Direction -> Point -> Direction -> b -> [b] -> a -> Color
-colorFromMaterial m rayDir p n sh shapes l = if lIsVisible l p sh shapes
-  then d &+ s &+ a
-  else a
-  where d = (mDiff m) &! (i &* (max 0 $ n &. neg dir))
-        s = (mSpec m) &! (i &* f**shiny)
-        a = (mAmb m) *& ((mDiff m) &! i)
-        i = lIntensity l p
-        dir = lDirection l p
-        shiny = mShininess m
+specularColor :: Material -> Color -> Direction -> Direction -> Direction -> Color
+specularColor m i n dir rayDir = (mSpec m) &! (i &* f**shiny)
+  where shiny = mShininess m
         f = max 0 $ r &. rayDir
         r = (2 * (dir &. n)) *& n &- dir
 
