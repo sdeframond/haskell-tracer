@@ -13,16 +13,16 @@ module Tracer.Lights ( diffuseColor
 import           Data.List
 import           Data.Maybe
 import           Data.Vect
-import           Tracer.Shapes
 import           Tracer.Color
+import           Tracer.Shapes
 
 type Point = Vec3
 type Direction = Vec3
 
 data Material = Material { mShininess :: Float
-                         , mSpec :: Color
-                         , mDiff:: Color
-                         , mAmb:: Float
+                         , mSpec      :: Color
+                         , mDiff      :: Color
+                         , mAmb       :: Float
                          }
                          deriving Eq
 

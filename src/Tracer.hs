@@ -74,5 +74,5 @@ sphericalPerspective x y = mkRayLongLat (Vec3 0 0 0) x y
 mkRenderer :: Scene -> Int -> Int -> Perspective -> Float -> Renderer
 mkRenderer scene width height perspective aperture x y = colorFromRay ray scene
   where ray = perspective (toCameraSize width x) $ -(toCameraSize height y)
-        toCameraSize range x = aperture * ((fromIntegral x) - (fromIntegral range)/2)/size
+        toCameraSize range value = aperture * ((fromIntegral value) - (fromIntegral range)/2)/size
         size = fromIntegral $ max width height

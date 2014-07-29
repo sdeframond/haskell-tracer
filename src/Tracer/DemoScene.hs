@@ -2,8 +2,8 @@ module Tracer.DemoScene (demoScene) where
 
 import           Data.Vect
 import           Tracer
-import           Tracer.Shapes
 import           Tracer.Lights
+import           Tracer.Shapes
 
 baseMaterial :: Material
 baseMaterial = Material {

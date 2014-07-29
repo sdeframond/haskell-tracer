@@ -1,4 +1,4 @@
-{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Tracer.Shapes ( mkRay
                      , mkRayLongLat
@@ -7,11 +7,11 @@ module Tracer.Shapes ( mkRay
                      , Triangle(..)
                      , Sphere(..)
                      , Plane(..)
-                   ) where
+                     ) where
 
 import           Data.Typeable
 import           Data.Vect
-import           Data.Vect.Float.Instances()
+import           Data.Vect.Float.Instances ()
 
 type Point = Vec3
 type Direction = Vec3
