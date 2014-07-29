@@ -1,6 +1,7 @@
 module Main where
 
 import           Codec.Picture
+import           Control.Parallel.Strategies
 import           Tracer
 import           Tracer.DemoScene
 
@@ -10,8 +11,11 @@ main = do
   writePng "./result.png" image
 
 render :: Int -> Int -> Image PixelRGB8
-render width height = generateImage r width height
+--render width height = generateImage r width height
+render width height = snd $ generateFoldImage (\(p:ps) _ _ -> (ps, p)) picture width height
   where r x y = colorToPixelRGB8 $ renderer x y
+        pic = [r x y | y <- [0..height-1], x <- [0..width-1]]
+        picture = runEval $ parBuffer 500 rseq pic
         renderer = mkRenderer demoScene width height sphericalPerspective 1
 
 colorToPixelRGB8 :: Color -> PixelRGB8
