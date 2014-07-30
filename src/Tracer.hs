@@ -1,8 +1,6 @@
 {-# LANGUAGE GADTs #-}
 
-module Tracer ( colorFromRay
-              , rayIntersection
-              , linearPerspective
+module Tracer ( linearPerspective
               , sphericalPerspective
               , mkRenderer
               , Scene(..)
