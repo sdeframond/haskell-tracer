@@ -8,7 +8,7 @@ import           System.Random
 main :: IO ()
 main = do
   rndGen <- newStdGen
-  let image = render rndGen 500 500
+  let image = render rndGen 500 300
   writePng "./result.png" image
 
 render :: StdGen -> Int -> Int -> Image PixelRGB8
