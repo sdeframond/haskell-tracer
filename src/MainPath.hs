@@ -1,7 +1,6 @@
 module Main where
 
 import           Codec.Picture
-import           Control.Parallel.Strategies
 import           PathTracer
 import           System.Random
 
@@ -12,12 +11,12 @@ main = do
   writePng "./result.png" image
 
 render :: StdGen -> Int -> Int -> Image PixelRGB8
---render width height = generateImage r width height
-render rndGen width height = snd $ generateFoldImage (\(p:ps) _ _ -> (ps, p)) picture width height
-  where r x y = colorToPixelRGB8 $ renderer x y
-        pic = [r x y | y <- [0..height-1], x <- [0..width-1]]
-        picture = runEval $ parBuffer 500 rseq pic
-        renderer = mkRenderer demoScene rndGen width height sphericalPerspective 1
+render rndGen width height = snd $ generateFoldImage r rndGen width height
+  where
+    r rg x y = (rg', pixel)
+      where pixel = colorToPixelRGB8 $ renderer rg'' x y
+            (rg', rg'') = split rg
+    renderer = mkRenderer demoScene width height sphericalPerspective 1
 
 colorToPixelRGB8 :: Color -> PixelRGB8
 colorToPixelRGB8 (Color r g b) = PixelRGB8 (fence r) (fence g) (fence b)

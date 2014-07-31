@@ -45,20 +45,18 @@ rayIntersection ray ts = listToMaybe $ sortBy depth intersections
   where intersections = [(t, d) | (t, Just d) <- zip ts $ map (intersectWith ray) ts, d > 0]
         depth (_, d) (_, d') = compare d d'
 
-tracePath :: Scene -> StdGen -> Int -> Ray -> Color
-tracePath scene rndGen ttl ray@(Ray o dir)
-  | ttl <= 0 = Color 0 0 0
-  | otherwise = fromMaybe (bgLight scene dir) $ do
+tracePath :: Scene -> StdGen -> [Int] -> Ray -> Color
+tracePath _ _ [] _ = Color 0 0 0
+tracePath scene rndGen (numberOfRays:raysPerBounce) ray@(Ray o dir) = fromMaybe (bgLight scene dir) $ do
   (obj, dist) <- rayIntersection ray (objects scene)
   let hitPoint = o &+ (dir &* dist)
       n = normal obj hitPoint
       mat = material obj
-      numberOfRays = 10
       (rndGen', rndGen'') = split rndGen
       newRays = [randomRayFromMaterial mat hitPoint n x y | (x, y) <- take numberOfRays $ pairs $ randoms rndGen']
       pairs (x:y:xs) = (x,y) : pairs xs
       bdrfs = map (bdrf mat dir n) newRays
-      receivedLights = map (tracePath scene rndGen'' (ttl-1)) newRays
+      receivedLights = map (tracePath scene rndGen'' raysPerBounce) newRays
       reflectedLight = average $ zipWith (&!) bdrfs receivedLights
       average xs = vecSum xs &* (1 / genericLength xs)
       emittance m = Color 0 0 0
@@ -80,10 +78,10 @@ linearPerspective x y = mkRay (Vec3 0 0 0) (Vec3 x y 1)
 sphericalPerspective :: Perspective
 sphericalPerspective x y = mkRayLongLat (Vec3 0 0 0) x y
 
-mkRenderer :: Scene -> StdGen -> Int -> Int -> Perspective -> Float -> Renderer
-mkRenderer scene rndGen width height perspective aperture x y = tracePath scene rndGen ttl ray
+mkRenderer :: Scene -> Int -> Int -> Perspective -> Float -> StdGen -> Renderer
+mkRenderer scene width height perspective aperture rndGen x y = tracePath scene rndGen raysPerBounce ray
   where ray = perspective (toCameraSize width x) $ -(toCameraSize height y)
-        ttl = 3
+        raysPerBounce = [60, 10, 5, 5, 2]
         toCameraSize range value = aperture * ((fromIntegral value) - (fromIntegral range)/2)/size
         size = fromIntegral $ max width height
 
